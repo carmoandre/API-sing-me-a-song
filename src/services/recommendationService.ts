@@ -35,7 +35,6 @@ async function random() {
         await recommendationRepository.getRandomByPercentage(randomPercentage);
 
     if (!recommendationByPercentage.length) {
-        console.log("entrou em hipotese de não ter uma das categorias");
         const freeRandomRecommendation =
             await recommendationRepository.getRandom();
         return freeRandomRecommendation;

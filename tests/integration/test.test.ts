@@ -2,6 +2,13 @@ import supertest from "supertest";
 import app from "../../src/app";
 
 import connection from "../../src/database";
+import {
+    recommendationBody,
+    createRecommendation,
+    createRecommendationWithScore,
+    createMultipleRecommendationWithScore,
+    deleteRecommendationById,
+} from "../factories/recommendationFactory";
 
 afterAll(async () => {
     await connection.end();
@@ -13,11 +20,7 @@ describe("POST /recommendations", () => {
     });
 
     it("should answer 201 valid params and no conflict", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
+        const body = recommendationBody();
 
         const response = await supertest(app)
             .post("/recommendations")
@@ -26,11 +29,8 @@ describe("POST /recommendations", () => {
     });
 
     it("should answer 400 for invalid name param", async () => {
-        const body = {
-            name: "",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
+        const body = recommendationBody();
+        body.name = "";
 
         const response = await supertest(app)
             .post("/recommendations")
@@ -39,10 +39,8 @@ describe("POST /recommendations", () => {
     });
 
     it("should answer 400 for invalid youtubeLink param", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink: "",
-        };
+        const body = recommendationBody();
+        body.youtubeLink = "";
 
         const response = await supertest(app)
             .post("/recommendations")
@@ -51,16 +49,8 @@ describe("POST /recommendations", () => {
     });
 
     it("should answer 409 for conflict coused by already added recommendation", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
-        await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)`,
-            [body.name, body.youtubeLink]
-        );
+        const body = recommendationBody();
+        await createRecommendation();
 
         const response = await supertest(app)
             .post("/recommendations")
@@ -75,18 +65,7 @@ describe("POST /recommendations/:id/upvote", () => {
     });
 
     it("should answer 200 valid params", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
-        const result = await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
-            RETURNING id`,
-            [body.name, body.youtubeLink]
-        );
-        const id = result.rows[0].id;
+        const id = await createRecommendation();
 
         const response = await supertest(app).post(
             `/recommendations/${id}/upvote`
@@ -103,20 +82,8 @@ describe("POST /recommendations/:id/upvote", () => {
     });
 
     it("should answer 404 for id not found", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
-        const insertion = await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
-            RETURNING id`,
-            [body.name, body.youtubeLink]
-        );
-        const id = insertion.rows[0].id;
-
-        await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
+        const id = await createRecommendation();
+        deleteRecommendationById(id);
 
         const response = await supertest(app).post(
             `/recommendations/${id}/upvote`
@@ -131,18 +98,7 @@ describe("POST /recommendations/:id/downvote", () => {
     });
 
     it("should answer 200 valid params", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
-        const result = await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
-        RETURNING id`,
-            [body.name, body.youtubeLink]
-        );
-        const id = result.rows[0].id;
+        const id = await createRecommendation();
 
         const response = await supertest(app).post(
             `/recommendations/${id}/downvote`
@@ -159,20 +115,8 @@ describe("POST /recommendations/:id/downvote", () => {
     });
 
     it("should answer 404 for id not found", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
-        const insertion = await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
-            RETURNING id`,
-            [body.name, body.youtubeLink]
-        );
-        const id = insertion.rows[0].id;
-
-        await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
+        const id = await createRecommendation();
+        await deleteRecommendationById(id);
 
         const response = await supertest(app).post(
             `/recommendations/${id}/downvote`
@@ -181,20 +125,8 @@ describe("POST /recommendations/:id/downvote", () => {
     });
 
     it("should answer 404 for score less than -5 ", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
         const downLimitScore = -5;
-
-        const insertion = await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink", score) VALUES ($1, $2, $3)
-            RETURNING id`,
-            [body.name, body.youtubeLink, downLimitScore]
-        );
-        const id = insertion.rows[0].id;
+        const id = await createRecommendationWithScore(downLimitScore);
 
         const response = await supertest(app).post(
             `/recommendations/${id}/downvote`
@@ -209,28 +141,10 @@ describe("GET /recommendations/random", () => {
     });
 
     it("should answer 200 for not empty recommendation table", async () => {
-        const bodyOne = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-            score: 4,
-        };
-        console.log("foi");
+        const baseScore = 10;
+        const numOfInsertions = 2;
+        await createMultipleRecommendationWithScore(baseScore, numOfInsertions);
 
-        await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink", score) 
-            VALUES ($1, $2, $3),
-            ($4, $5, $6)
-            `,
-            [
-                bodyOne.name,
-                bodyOne.youtubeLink,
-                bodyOne.score,
-                bodyOne.name + "2",
-                bodyOne.youtubeLink + "2",
-                bodyOne.score + 1,
-            ]
-        );
         const response = await supertest(app).get(`/recommendations/random`);
         expect(response.status).toEqual(200);
     });
@@ -247,20 +161,9 @@ describe("GET /recommendations/top/:amount", () => {
     });
 
     it("should answer 200 for valid params not empty recommendation table", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-            score: -5,
-        };
-
-        for (let i = 0; i < 15; i++) {
-            await connection.query(
-                `INSERT INTO recommendations (name, "youtubeLink", score) 
-                VALUES ($1, $2, $3)`,
-                [body.name + `${i}`, body.youtubeLink + `${i}`, body.score + i]
-            );
-        }
+        const baseScore = -5;
+        const numOfInsertions = 15;
+        await createMultipleRecommendationWithScore(baseScore, numOfInsertions);
 
         const amount = 10;
         const response = await supertest(app).get(
