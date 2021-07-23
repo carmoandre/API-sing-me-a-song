@@ -19,13 +19,17 @@ async function addNew(req: Request, res: Response) {
     }
 }
 
-async function improveScore(req: Request, res: Response) {
+async function alterScore(req: Request, res: Response) {
     try {
         const validation = improveSchema.validate(req.params);
         if (validation.error) return res.sendStatus(400);
 
         const { id } = req.params;
-        const success = await recommendationService.improveScore(parseInt(id));
+        const upOrDown = req.path.replace(`/recommendations/${id}/`, "");
+        const success = await recommendationService.alterScore(
+            parseInt(id),
+            upOrDown
+        );
 
         const status = success ? 200 : 404;
         res.sendStatus(status);
@@ -35,6 +39,4 @@ async function improveScore(req: Request, res: Response) {
     }
 }
 
-async function reduceScore() {}
-
-export { addNew, improveScore, reduceScore };
+export { addNew, alterScore };

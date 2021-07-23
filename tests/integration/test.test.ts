@@ -119,15 +119,149 @@ describe("POST /recommendations/:id/upvote", () => {
 
         const isertion = await connection.query(
             `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
+            RETURNING id`,
+            [body.name, body.youtubeLink]
+        );
+        const id = isertion.rows[0].id;
+
+        await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
+
+        const response = await supertest(app).post(
+            `/recommendations/${id}/upvote`
+        );
+        expect(response.status).toEqual(404);
+    });
+});
+
+describe("POST /recommendations/:id/upvote", () => {
+    beforeEach(async () => {
+        await connection.query("DELETE FROM recommendations");
+    });
+
+    it("should answer 200 valid params", async () => {
+        const body = {
+            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
+            youtubeLink:
+                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
+        };
+
+        const result = await connection.query(
+            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
+          RETURNING id`,
+            [body.name, body.youtubeLink]
+        );
+        const id = result.rows[0].id;
+
+        const response = await supertest(app).post(
+            `/recommendations/${id}/upvote`
+        );
+        expect(response.status).toEqual(200);
+    });
+
+    it("should answer 400 for invalid params", async () => {
+        const invalidId = "id";
+        const response = await supertest(app).post(
+            `/recommendations/${invalidId}/upvote`
+        );
+        expect(response.status).toEqual(400);
+    });
+
+    it("should answer 404 for id not found", async () => {
+        const body = {
+            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
+            youtubeLink:
+                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
+        };
+
+        const isertion = await connection.query(
+            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
           RETURNING id`,
             [body.name, body.youtubeLink]
         );
         const id = isertion.rows[0].id;
 
-        await connection.query(`IELETE FROM recommendations WHERE=$1)`, [id]);
+        await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
 
         const response = await supertest(app).post(
             `/recommendations/${id}/upvote`
+        );
+        expect(response.status).toEqual(404);
+    });
+});
+
+describe("POST /recommendations/:id/downvote", () => {
+    beforeEach(async () => {
+        await connection.query("DELETE FROM recommendations");
+    });
+
+    it("should answer 200 valid params", async () => {
+        const body = {
+            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
+            youtubeLink:
+                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
+        };
+
+        const result = await connection.query(
+            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
+        RETURNING id`,
+            [body.name, body.youtubeLink]
+        );
+        const id = result.rows[0].id;
+
+        const response = await supertest(app).post(
+            `/recommendations/${id}/downvote`
+        );
+        expect(response.status).toEqual(200);
+    });
+
+    it("should answer 400 for invalid params", async () => {
+        const invalidId = "id";
+        const response = await supertest(app).post(
+            `/recommendations/${invalidId}/downvote`
+        );
+        expect(response.status).toEqual(400);
+    });
+
+    it("should answer 404 for id not found", async () => {
+        const body = {
+            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
+            youtubeLink:
+                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
+        };
+
+        const isertion = await connection.query(
+            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
+        RETURNING id`,
+            [body.name, body.youtubeLink]
+        );
+        const id = isertion.rows[0].id;
+
+        await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
+
+        const response = await supertest(app).post(
+            `/recommendations/${id}/downvote`
+        );
+        expect(response.status).toEqual(404);
+    });
+
+    it("should answer 404 for id not found", async () => {
+        const body = {
+            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
+            youtubeLink:
+                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
+        };
+
+        const downLimitScore = -5;
+
+        const isertion = await connection.query(
+            `INSERT INTO recommendations (name, "youtubeLink", score) VALUES ($1, $2, $3)
+            RETURNING id`,
+            [body.name, body.youtubeLink, downLimitScore]
+        );
+        const id = isertion.rows[0].id;
+
+        const response = await supertest(app).post(
+            `/recommendations/${id}/downvote`
         );
         expect(response.status).toEqual(404);
     });

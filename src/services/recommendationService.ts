@@ -5,19 +5,28 @@ async function addNew(name: string, youtubeLink: string) {
         name,
         youtubeLink
     );
-    console.log(recommendation);
     if (recommendation) return false;
 
     await recommendationRepository.addNew(name, youtubeLink);
     return true;
 }
 
-async function improveScore(id: number) {
+async function alterScore(id: number, upOrDown: string) {
     const recommendation = await recommendationRepository.getById(id);
     if (!recommendation) return false;
+    const score = recommendation.score;
 
-    await recommendationRepository.improveScore(id, recommendation.score++);
+    if (score === -5 && upOrDown === "downvote") {
+        await recommendationRepository.deleteById(id);
+        return false;
+    }
+
+    const newValue =
+        upOrDown === "upvote" ? recommendation.score++ : recommendation.score--;
+
+    await recommendationRepository.alterScore(id, newValue);
+
     return true;
 }
 
-export { addNew, improveScore };
+export { addNew, alterScore };

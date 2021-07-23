@@ -23,11 +23,15 @@ async function getById(id: number) {
     return recommendation.rows[0];
 }
 
-async function improveScore(id: number, newValue: number) {
+async function alterScore(id: number, newValue: number) {
     await connection.query(`UPDATE recommendations SET score=$1 WHERE id=$2`, [
         newValue,
         id,
     ]);
 }
 
-export { getByNameOrLink, addNew, getById, improveScore };
+async function deleteById(id: number) {
+    await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
+}
+
+export { getByNameOrLink, addNew, getById, alterScore, deleteById };

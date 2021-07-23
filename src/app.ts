@@ -13,9 +13,9 @@ app.get("/test", (req, res) => {
 
 app.post("/recommendations", recommendationController.addNew);
 
-app.post("/recommendations/:id/upvote", recommendationController.improveScore);
+app.post("/recommendations/:id/upvote", recommendationController.alterScore);
 
-app.post("/recommendations/:id/downvote", recommendationController.reduceScore);
+app.post("/recommendations/:id/downvote", recommendationController.alterScore);
 
 app.get("/recommendations/random");
 
