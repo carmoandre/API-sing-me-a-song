@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { addSchema, improveSchema } from "../joiSchemas/schemas";
+import { addSchema, amountSchema, improveSchema } from "../joiSchemas/schemas";
 import * as recommendationService from "../services/recommendationService";
 
 async function addNew(req: Request, res: Response) {
@@ -41,13 +41,33 @@ async function alterScore(req: Request, res: Response) {
 
 async function random(req: Request, res: Response) {
     try {
-        const success = await recommendationService.random();
-        const status = success ? 200 : 404;
-        res.sendStatus(status);
+        const result = await recommendationService.random();
+        if (result.length) {
+            res.status(200).send(result);
+        } else {
+            res.sendStatus(404);
+        }
     } catch (err) {
         console.error(err);
         res.sendStatus(500);
     }
 }
 
-export { addNew, alterScore, random };
+async function amountTop(req: Request, res: Response) {
+    try {
+        const validation = amountSchema.validate(req.params);
+        if (validation.error) return res.sendStatus(400);
+        const { amount } = req.params;
+        const result = await recommendationService.amountTop(parseInt(amount));
+        if (result.length) {
+            res.status(200).send(result);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+}
+
+export { addNew, alterScore, random, amountTop };

@@ -7,14 +7,6 @@ afterAll(async () => {
     await connection.end();
 });
 
-describe("GET /test", () => {
-    it('should answer with text "OK!" and status 200', async () => {
-        const response = await supertest(app).get("/test");
-        expect(response.text).toBe("OK!");
-        expect(response.status).toBe(200);
-    });
-});
-
 describe("POST /recommendations", () => {
     beforeEach(async () => {
         await connection.query("DELETE FROM recommendations");
@@ -117,68 +109,12 @@ describe("POST /recommendations/:id/upvote", () => {
                 "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
         };
 
-        const isertion = await connection.query(
+        const insertion = await connection.query(
             `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
             RETURNING id`,
             [body.name, body.youtubeLink]
         );
-        const id = isertion.rows[0].id;
-
-        await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
-
-        const response = await supertest(app).post(
-            `/recommendations/${id}/upvote`
-        );
-        expect(response.status).toEqual(404);
-    });
-});
-
-describe("POST /recommendations/:id/upvote", () => {
-    beforeEach(async () => {
-        await connection.query("DELETE FROM recommendations");
-    });
-
-    it("should answer 200 valid params", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
-        const result = await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
-          RETURNING id`,
-            [body.name, body.youtubeLink]
-        );
-        const id = result.rows[0].id;
-
-        const response = await supertest(app).post(
-            `/recommendations/${id}/upvote`
-        );
-        expect(response.status).toEqual(200);
-    });
-
-    it("should answer 400 for invalid params", async () => {
-        const invalidId = "id";
-        const response = await supertest(app).post(
-            `/recommendations/${invalidId}/upvote`
-        );
-        expect(response.status).toEqual(400);
-    });
-
-    it("should answer 404 for id not found", async () => {
-        const body = {
-            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
-            youtubeLink:
-                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-        };
-
-        const isertion = await connection.query(
-            `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
-          RETURNING id`,
-            [body.name, body.youtubeLink]
-        );
-        const id = isertion.rows[0].id;
+        const id = insertion.rows[0].id;
 
         await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
 
@@ -229,12 +165,12 @@ describe("POST /recommendations/:id/downvote", () => {
                 "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
         };
 
-        const isertion = await connection.query(
+        const insertion = await connection.query(
             `INSERT INTO recommendations (name, "youtubeLink") VALUES ($1, $2)
-        RETURNING id`,
+            RETURNING id`,
             [body.name, body.youtubeLink]
         );
-        const id = isertion.rows[0].id;
+        const id = insertion.rows[0].id;
 
         await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
 
@@ -244,7 +180,7 @@ describe("POST /recommendations/:id/downvote", () => {
         expect(response.status).toEqual(404);
     });
 
-    it("should answer 404 for id not found", async () => {
+    it("should answer 404 for score less than -5 ", async () => {
         const body = {
             name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
             youtubeLink:
@@ -253,12 +189,12 @@ describe("POST /recommendations/:id/downvote", () => {
 
         const downLimitScore = -5;
 
-        const isertion = await connection.query(
+        const insertion = await connection.query(
             `INSERT INTO recommendations (name, "youtubeLink", score) VALUES ($1, $2, $3)
             RETURNING id`,
             [body.name, body.youtubeLink, downLimitScore]
         );
-        const id = isertion.rows[0].id;
+        const id = insertion.rows[0].id;
 
         const response = await supertest(app).post(
             `/recommendations/${id}/downvote`
@@ -303,3 +239,50 @@ describe("GET /recommendations/random", () => {
         expect(response.status).toEqual(404);
     });
 });
+
+describe("GET /recommendations/top/:amount", () => {
+    beforeEach(async () => {
+        await connection.query("DELETE FROM recommendations");
+    });
+
+    it("should answer 200 for valid params not empty recommendation table", async () => {
+        const body = {
+            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
+            youtubeLink:
+                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
+            score: -5,
+        };
+
+        for (let i = 0; i < 15; i++) {
+            await connection.query(
+                `INSERT INTO recommendations (name, "youtubeLink", score) 
+                VALUES ($1, $2, $3)`,
+                [body.name + `${i}`, body.youtubeLink + `${i}`, body.score + i]
+            );
+        }
+
+        const amount = 10;
+        const response = await supertest(app).get(
+            `/recommendations/top/${amount}`
+        );
+        expect(response.status).toEqual(200);
+    });
+
+    it("should answer 400 for invalid params", async () => {
+        const invalidAmount = "amount";
+        const response = await supertest(app).get(
+            `/recommendations/top/${invalidAmount}`
+        );
+        expect(response.status).toEqual(400);
+    });
+
+    it("should answer 404 for empty recommendation table", async () => {
+        const amount = 10;
+        const response = await supertest(app).get(
+            `/recommendations/top/${amount}`
+        );
+        expect(response.status).toEqual(404);
+    });
+});
+
+// todas as rotas deveriam ter um teste pra empty table?

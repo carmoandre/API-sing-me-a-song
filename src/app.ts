@@ -7,10 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/test", (req, res) => {
-    res.send("OK!");
-});
-
 app.post("/recommendations", recommendationController.addNew);
 
 app.post("/recommendations/:id/upvote", recommendationController.alterScore);
@@ -19,6 +15,6 @@ app.post("/recommendations/:id/downvote", recommendationController.alterScore);
 
 app.get("/recommendations/random", recommendationController.random);
 
-app.get("/recommendations/top/:amount");
+app.get("/recommendations/top/:amount", recommendationController.amountTop);
 
 export default app;

@@ -42,7 +42,24 @@ async function getRandom(scoreLimit: number) {
         ORDER BY random()
         LIMIT 1`
     );
-    return recommendation.rows[0];
+    return recommendation.rows;
 }
 
-export { getByNameOrLink, addNew, getById, alterScore, deleteById, getRandom };
+async function amountTop(amount: number) {
+    const recommendation = await connection.query(
+        `SELECT * FROM recommendations  
+        ORDER BY score DESC
+        LIMIT ${amount}`
+    );
+    return recommendation.rows;
+}
+
+export {
+    getByNameOrLink,
+    addNew,
+    getById,
+    alterScore,
+    deleteById,
+    getRandom,
+    amountTop,
+};

@@ -9,4 +9,8 @@ const improveSchema = joi.object({
     id: joi.number().required(),
 });
 
-export { addSchema, improveSchema };
+const amountSchema = joi.object({
+    amount: joi.number().required().min(1),
+});
+
+export { addSchema, improveSchema, amountSchema };

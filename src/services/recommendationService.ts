@@ -38,4 +38,9 @@ async function random() {
     return recommendation;
 }
 
-export { addNew, alterScore, random };
+async function amountTop(amount: number) {
+    const recommendation = await recommendationRepository.amountTop(amount);
+    return recommendation;
+}
+
+export { addNew, alterScore, random, amountTop };
