@@ -39,4 +39,15 @@ async function alterScore(req: Request, res: Response) {
     }
 }
 
-export { addNew, alterScore };
+async function random(req: Request, res: Response) {
+    try {
+        const success = await recommendationService.random();
+        const status = success ? 200 : 404;
+        res.sendStatus(status);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+}
+
+export { addNew, alterScore, random };

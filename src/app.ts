@@ -17,7 +17,7 @@ app.post("/recommendations/:id/upvote", recommendationController.alterScore);
 
 app.post("/recommendations/:id/downvote", recommendationController.alterScore);
 
-app.get("/recommendations/random");
+app.get("/recommendations/random", recommendationController.random);
 
 app.get("/recommendations/top/:amount");
 

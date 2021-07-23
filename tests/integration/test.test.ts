@@ -266,3 +266,40 @@ describe("POST /recommendations/:id/downvote", () => {
         expect(response.status).toEqual(404);
     });
 });
+
+describe("GET /recommendations/random", () => {
+    beforeEach(async () => {
+        await connection.query("DELETE FROM recommendations");
+    });
+
+    it("should answer 200 for not empty recommendation table", async () => {
+        const bodyOne = {
+            name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
+            youtubeLink:
+                "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
+            score: 10,
+        };
+
+        await connection.query(
+            `INSERT INTO recommendations (name, "youtubeLink", score) 
+            VALUES ($1, $2, $3),
+            ($4, $5, $6)
+            `,
+            [
+                bodyOne.name,
+                bodyOne.youtubeLink,
+                bodyOne.score,
+                bodyOne.name + "2",
+                bodyOne.youtubeLink + "2",
+                bodyOne.score + 1,
+            ]
+        );
+        const response = await supertest(app).get(`/recommendations/random`);
+        expect(response.status).toEqual(200);
+    });
+
+    it("should answer 404 for empty recommendation table", async () => {
+        const response = await supertest(app).get(`/recommendations/random`);
+        expect(response.status).toEqual(404);
+    });
+});

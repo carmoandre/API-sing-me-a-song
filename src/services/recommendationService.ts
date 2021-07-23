@@ -29,4 +29,13 @@ async function alterScore(id: number, upOrDown: string) {
     return true;
 }
 
-export { addNew, alterScore };
+async function random() {
+    const randomPercentage = Math.floor(Math.random() * 10 + 1);
+    const recommendation = await recommendationRepository.getRandom(
+        randomPercentage
+    );
+
+    return recommendation;
+}
+
+export { addNew, alterScore, random };

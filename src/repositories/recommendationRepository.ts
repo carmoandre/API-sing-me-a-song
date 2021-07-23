@@ -34,4 +34,15 @@ async function deleteById(id: number) {
     await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
 }
 
-export { getByNameOrLink, addNew, getById, alterScore, deleteById };
+async function getRandom(scoreLimit: number) {
+    const where = scoreLimit <= 7 ? "score > 10" : "score <= 10";
+    const recommendation = await connection.query(
+        `SELECT * FROM recommendations  
+        WHERE ${where}
+        ORDER BY random()
+        LIMIT 1`
+    );
+    return recommendation.rows[0];
+}
+
+export { getByNameOrLink, addNew, getById, alterScore, deleteById, getRandom };
