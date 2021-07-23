@@ -31,11 +31,17 @@ async function alterScore(id: number, upOrDown: string) {
 
 async function random() {
     const randomPercentage = Math.floor(Math.random() * 10 + 1);
-    const recommendation = await recommendationRepository.getRandom(
-        randomPercentage
-    );
+    const recommendationByPercentage =
+        await recommendationRepository.getRandomByPercentage(randomPercentage);
 
-    return recommendation;
+    if (!recommendationByPercentage.length) {
+        console.log("entrou em hipotese de não ter uma das categorias");
+        const freeRandomRecommendation =
+            await recommendationRepository.getRandom();
+        return freeRandomRecommendation;
+    }
+
+    return recommendationByPercentage;
 }
 
 async function amountTop(amount: number) {

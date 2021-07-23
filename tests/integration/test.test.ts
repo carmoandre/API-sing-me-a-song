@@ -213,8 +213,9 @@ describe("GET /recommendations/random", () => {
             name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
             youtubeLink:
                 "https://www.youtube.com/watch?v=qfaDUDwIaPE&ab_channel=SAMusic",
-            score: 10,
+            score: 4,
         };
+        console.log("foi");
 
         await connection.query(
             `INSERT INTO recommendations (name, "youtubeLink", score) 
@@ -284,5 +285,3 @@ describe("GET /recommendations/top/:amount", () => {
         expect(response.status).toEqual(404);
     });
 });
-
-// todas as rotas deveriam ter um teste pra empty table?
