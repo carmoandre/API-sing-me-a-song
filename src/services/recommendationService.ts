@@ -1,4 +1,5 @@
 import * as recommendationRepository from "../repositories/recommendationRepository";
+import { Recommendation } from "../interfaces/interfaces";
 
 async function addNew(name: string, youtubeLink: string) {
     const recommendation = await recommendationRepository.getByNameOrLink(

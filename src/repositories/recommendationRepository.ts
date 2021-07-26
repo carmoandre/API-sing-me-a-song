@@ -1,4 +1,5 @@
 import connection from "../database";
+import { Recommendation } from "../interfaces/interfaces";
 
 async function getByNameOrLink(name: string, youtubeLink: string) {
     const recommendation = await connection.query(
@@ -15,7 +16,7 @@ async function addNew(name: string, youtubeLink: string) {
     );
 }
 
-async function getById(id: number) {
+async function getById(id: number): Promise<Recommendation> {
     const recommendation = await connection.query(
         `SELECT * FROM recommendations WHERE id=$1`,
         [id]
@@ -34,7 +35,9 @@ async function deleteById(id: number) {
     await connection.query(`DELETE FROM recommendations WHERE id=$1`, [id]);
 }
 
-async function getRandomByPercentage(scoreLimit: number) {
+async function getRandomByPercentage(
+    scoreLimit: number
+): Promise<Recommendation[]> {
     const where = scoreLimit <= 7 ? "score > 10" : "score <= 10";
     const recommendation = await connection.query(
         `SELECT * FROM recommendations  
@@ -45,7 +48,7 @@ async function getRandomByPercentage(scoreLimit: number) {
     return recommendation.rows;
 }
 
-async function getRandom() {
+async function getRandom(): Promise<Recommendation[]> {
     const recommendation = await connection.query(
         `SELECT * FROM recommendations
         ORDER BY random()
@@ -54,7 +57,7 @@ async function getRandom() {
     return recommendation.rows;
 }
 
-async function amountTop(amount: number) {
+async function amountTop(amount: number): Promise<Recommendation[]> {
     const recommendation = await connection.query(
         `SELECT * FROM recommendations  
         ORDER BY score DESC

@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 
 import { addSchema, amountSchema, improveSchema } from "../joiSchemas/schemas";
 import * as recommendationService from "../services/recommendationService";
+import { AddInput } from "../interfaces/interfaces";
 
 async function addNew(req: Request, res: Response) {
     try {
         const validation = addSchema.validate(req.body);
         if (validation.error) return res.sendStatus(400);
 
-        const { name, youtubeLink } = req.body;
+        const { name, youtubeLink }: AddInput = req.body;
         const success = await recommendationService.addNew(name, youtubeLink);
 
         const status = success ? 201 : 409;
