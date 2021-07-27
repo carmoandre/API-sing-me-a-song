@@ -25,6 +25,7 @@ async function getById(id: number): Promise<Recommendation> {
 }
 
 async function alterScore(id: number, newValue: number) {
+    console.log(newValue);
     await connection.query(`UPDATE recommendations SET score=$1 WHERE id=$2`, [
         newValue,
         id,
