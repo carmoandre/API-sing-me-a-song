@@ -72,7 +72,7 @@ describe("POST /recommendations/:id/upvote", () => {
         );
         expect(response.status).toEqual(200);
     });
-    /*
+
     it("should answer 400 for invalid params", async () => {
         const invalidId = "id";
         const response = await supertest(app).post(
@@ -90,9 +90,8 @@ describe("POST /recommendations/:id/upvote", () => {
         );
         expect(response.status).toEqual(404);
     });
-    */
 });
-/*
+
 describe("POST /recommendations/:id/downvote", () => {
     beforeEach(async () => {
         await connection.query("DELETE FROM recommendations");
@@ -189,4 +188,3 @@ describe("GET /recommendations/top/:amount", () => {
         expect(response.status).toEqual(404);
     });
 });
-*/
