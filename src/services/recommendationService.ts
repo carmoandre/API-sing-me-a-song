@@ -22,7 +22,9 @@ async function alterScore(id: number, upOrDown: string) {
     }
 
     const newValue =
-        upOrDown === "upvote" ? recommendation.score++ : recommendation.score--;
+        upOrDown === "upvote"
+            ? recommendation.score + 1
+            : recommendation.score - 1;
 
     await recommendationRepository.alterScore(id, newValue);
 
