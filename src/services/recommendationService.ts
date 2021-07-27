@@ -1,7 +1,7 @@
 import * as recommendationRepository from "../repositories/recommendationRepository";
 import { Recommendation } from "../interfaces/interfaces";
 
-async function addNew(name: string, youtubeLink: string) {
+async function addNew(name: string, youtubeLink: string): Promise<boolean> {
     const recommendation = await recommendationRepository.getByNameOrLink(
         name,
         youtubeLink
@@ -12,7 +12,7 @@ async function addNew(name: string, youtubeLink: string) {
     return true;
 }
 
-async function alterScore(id: number, upOrDown: string) {
+async function alterScore(id: number, upOrDown: string): Promise<boolean> {
     const recommendation = await recommendationRepository.getById(id);
     if (!recommendation) return false;
     const score = recommendation.score;
@@ -30,7 +30,7 @@ async function alterScore(id: number, upOrDown: string) {
     return true;
 }
 
-async function random() {
+async function random(): Promise<Recommendation[]> {
     const randomPercentage = Math.floor(Math.random() * 10 + 1);
     const recommendationByPercentage =
         await recommendationRepository.getRandomByPercentage(randomPercentage);
@@ -44,7 +44,7 @@ async function random() {
     return recommendationByPercentage;
 }
 
-async function amountTop(amount: number) {
+async function amountTop(amount: number): Promise<Recommendation[]> {
     const recommendation = await recommendationRepository.amountTop(amount);
     return recommendation;
 }

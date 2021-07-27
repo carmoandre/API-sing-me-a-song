@@ -1,6 +1,7 @@
 import connection from "../../src/database";
+import { AddInput } from "../../src/interfaces/interfaces";
 
-function recommendationBody() {
+function recommendationBody(): AddInput {
     const body = {
         name: "GOOD 4 U (LEOD PISADINHA EDIT) - SAMUSIC",
         youtubeLink:

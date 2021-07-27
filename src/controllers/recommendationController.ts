@@ -26,7 +26,10 @@ async function alterScore(req: Request, res: Response) {
         if (validation.error) return res.sendStatus(400);
 
         const { id } = req.params;
-        const upOrDown = req.path.replace(`/recommendations/${id}/`, "");
+        const upOrDown: string = req.path.replace(
+            `/recommendations/${id}/`,
+            ""
+        );
         const success = await recommendationService.alterScore(
             parseInt(id),
             upOrDown
